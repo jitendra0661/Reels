@@ -1,163 +1,212 @@
-import React, { useState, useRef, useEffect } from 'react'
-import './Login.css'
-import Insta from '../Assets/insta.png'
-import { makeStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import InstaLogo from '../Assets/Instagram.JPG'
-import TextField from '@material-ui/core/TextField';
-import Link from '@material-ui/core/Link';
-import { CarouselProvider, Slider, Slide, Image } from 'pure-react-carousel';
-import 'pure-react-carousel/dist/react-carousel.es.css';
-import Img1 from '../Assets/img1.jpg'
-import Img2 from '../Assets/img2.jpg'
-import Img3 from '../Assets/img3.jpg'
-import Img4 from '../Assets/img4.jpg'
-import Img5 from '../Assets/img5.jpg'
-import { useAuth } from '../Context/AuthContext'
-import { link, useHistory } from "react-router-dom";
-import Alert from '@material-ui/lab/Alert';
-export default function Login() {
-  const useStyles = makeStyles({
-    root: {
-      width: '100%'
-    },
-    root2: {
-      width: '100%',
-      marginTop: '3%'
-    },
-    buton: {
-      backgroundColor: '#0095f6',
-      marginBottom: '3%',
-      marginLeft: '4%',
-      marginRight: '4%'
-    },
-    email: {
-      // marginLeft:'1%',
-      // marginRight:'1%'
-      display: 'block'
-    },
-    password: {
-      // marginLeft:'1%',
-      // marginRight:'1%'
-    },
-    link: {
-      display: 'flex',
-      justifyContent: 'center',
-      marginTop: '2%'
-    },
-    link2: {
-      display: 'inline',
-      marginLeft: '1%',
+import React, { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthProvider";
+import Error from "./Error";
+import { useHistory } from "react-router";
+import { Button } from "@material-ui/core";
+import Signup from "./Signup";
+import {
+  TextField,
+  makeStyles,
+  Grid,
+  Paper,
+  Card,
+  CardContent,
+  CardActions,
+  Container,
+  CardMedia,
+  Typography,
+} from "@material-ui/core";
 
-    },
-    typo: {
-      display: 'flex',
-      justifyContent: 'center',
-
-    }
-  });
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('')
-  const classes = useStyles();
-  const { login } = useAuth()
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
+function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loader, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [type, setType] = useState("");
   const history = useHistory();
-  const handleEmail = (e) => {
-    setEmail(e.target.value);
-  }
-  const handlePassword = (e) => {
-    setPassword(e.target.value);
-  }
-  async function handleSubmit(e) {
-    e.preventDefault()
-    try {
-      // console.log(email,password)
-      setError("")
-      setLoading(true)
-      await login(email, password)
-      setLoading(false)
-      history.push("/")
-    } catch {
-      setError("Failed to log in")
-      setLoading(false)
+  const value = useContext(AuthContext);
+
+  useEffect(() => {
+    if (value.user !== null) {
+      history.push("/");
     }
-  }
-  return (
-    <div className='login-container'>
-      <div className='imgcar' style={{ backgroundImage: `url(` + Insta + `)`, backgroundSize: 'cover' }}>
-        <div className='caro'>
-          <CarouselProvider
-            visibleSlides={1}
-            totalSlides={5}
-            step={3}
-            naturalSlideWidth={238}
-            naturalSlideHeight={423}
-            hasMasterSpinner
-            isPlaying={true}
-            infinite={true}
-            dragEnabled={false}
-            touchEnabled={false}
-          >
-            <Slider>
-              <Slide index={0}>
-                <Image src={Img1} />
-              </Slide>
-              <Slide index={1}>
-                <Image src={Img2} />
-              </Slide>
-              <Slide index={2}>
-                <Image src={Img3} />
-              </Slide>
-              <Slide index={3}>
-                <Image src={Img4} />
-              </Slide>
-              <Slide index={4}>
-                <Image src={Img5} />
-              </Slide>
-            </Slider>
+    setLoading(false);
+  }, [history, value.user]);
 
-          </CarouselProvider>
-        </div>
-      </div>
-      <div className='login-form'>
-        <Card className={classes.root} variant="outlined">
-          <CardContent>
-            <div className="insta-head">
-              <img src={InstaLogo} />
-            </div>
-            {error && <Alert severity="error">{error}</Alert>}
-            <TextField InputLabelProps={{ style: { width: '-webkit-fill-available' } }} className={classes.email} margin='dense'
-              onChange={(e) => { handleEmail(e) }} id="outlined-basic" label="Enter Email" variant="outlined" fullWidth={true} size='small' />
-            <TextField InputLabelProps={{ style: { width: '-webkit-fill-available' } }} className={classes.password} margin='dense'
-              onChange={(e) => { handlePassword(e) }} id="outlined-basic" label="Password" variant="outlined" fullWidth={true} size='small' />
-            <Typography variant='subtitle1'>
-              <Link className={classes.link} variant="inherit" underline='none' href="#" >
-                Forget Password ?
-              </Link>
-            </Typography>
-          </CardContent>
-          <CardActions>
-            <Button disabled={loading} onClick={handleSubmit} className={classes.buton} fullWidth={true} variant="contained" color="primary">
-              Log In
-            </Button>
-          </CardActions>
-        </Card>
+  let useStyles = makeStyles({
+    centerDivs: {
+      height: "100vh",
+      display: "flex",
+      justifyContent: "center",
+      width: "100vw",
+      alignItems: "center",
+      // paddingLeft: "10vw",
+      // paddingRight: "10vw",
+    },
+    crousel: {
+      height: "10rem",
+      backgroundColor: "lightgray",
+    },
+    fullWidth: {
+      width: "100%",
+    },
+    centerElements: {
+      display: "flex",
+      flexDirection: "column",
+    },
+    mb: {
+      marginBottom: "0.5rem",
+    },
+    alignCenter: {
+      justifyContent: "center",
+    },
+    // alignitems: {
+    //     textAlign: "center"
+    // },
+    image: {
+      height: "6rem",
+      backgroundSize: "contain",
+    },
+  });
 
-        <Card className={classes.root2} variant="outlined">
-          <CardContent>
-            <Typography className={classes.typo} variant='subtitle1'>
-              Don't have an account? <Link className={classes.link2} variant="inherit" underline='none' href="/signup" >
-                Sign up
-              </Link>
-            </Typography>
-          </CardContent>
-        </Card>
-      </div>
+  const handleSubmit = async () => {
+    if (password.length < 8) {
+      setType("warning");
+
+      setError("Password must contain 8 characters!");
+      setTimeout(() => {
+        setError(null);
+        setType(null);
+      }, 5000);
+      setLoading(false);
+      return;
+    }
+    if (email === "") {
+      setType("warning");
+
+      setError("Enter email please!");
+      setTimeout(() => {
+        setError(null);
+        setType(null);
+      }, 5000);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      let userData = await value.login(email, password);
+      console.log(userData);
+      history.push("/");
+    } catch (err) {
+      setError(err);
+      setType("error");
+      setTimeout(() => {
+        setError("");
+        setType("");
+      }, 5000);
+    }
+    setLoading(false);
+    setEmail("");
+    setPassword("");
+  };
+  let classes = useStyles();
+
+  return loader === true ? (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: "100px",
+      }}
+    >
+      <div className="loader"></div>
     </div>
-  )
+  ) : (
+    <>
+      {error !== null && error.length > 0 ? (
+        <Error type={type} message={error} />
+      ) : null}
+      <div className={classes.centerDivs}>
+        <Container>
+          <Grid container className={classes.alignCenter} spacing={2}>
+            <Grid item sm={4}>
+              <img
+                src="./images/logo.jpg"
+                style={{ width: "-webkit-fill-available" }}
+              />
+            </Grid>
+            <Grid item sm={5}>
+              <Card variant="outlined">
+                <CardMedia
+                  image="./images/reelsLogo.jpg"
+                  className={classes.image}
+                />
+                <CardContent className={classes.centerElements}>
+                  <TextField
+                    id="outlined-basic"
+                    label="email"
+                    type="email"
+                    variant="outlined"
+                    value={email}
+                    size="small"
+                    display="block"
+                    className={classes.mb}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                    }}
+                  />
+                  <TextField
+                    id="outlined-basic"
+                    label="password"
+                    type="password"
+                    variant="outlined"
+                    value={password}
+                    size="small"
+                    className={classes.mb}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                    }}
+                    display="block"
+                  />
+                  <LinkButton
+                    content="Forget Password?"
+                    route="/signup"
+                  ></LinkButton>
+                </CardContent>
+                <CardActions>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSubmit}
+                    disabled={loader}
+                    className={classes.fullWidth}
+                  >
+                    Login
+                  </Button>
+                </CardActions>
+              </Card>
+              <Card variant="outlined">
+                <Typography style={{ textAlign: "center" }}>
+                  Don't have an account?
+                  <LinkButton content="Signup" route="/signup"></LinkButton>
+                </Typography>
+              </Card>
+            </Grid>
+          </Grid>
+        </Container>
+      </div>
+    </>
+  );
 }
+
+function LinkButton(prop) {
+  return (
+    <Button variant="text" style={{ color: "blue" }}>
+      <Link to={prop.route}>{prop.content}</Link>
+    </Button>
+  );
+}
+
+export default Login;

@@ -1,191 +1,203 @@
-import React, { useState } from 'react'
-import './Signup.css'
-import { makeStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import InstaLogo from '../Assets/Instagram.JPG'
-import TextField from '@material-ui/core/TextField';
-import Link from '@material-ui/core/Link';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import { useHistory } from "react-router-dom";
-import { useAuth } from '../Context/AuthContext';
-import {storage,database} from '../firebase'
-import Alert from '@material-ui/lab/Alert';
-export default function Signup() {
-    const useStyles = makeStyles({
-        root: {
-            width: '100%'
-        },
-        root2: {
-            width: '100%',
-            marginTop: '3%'
-        },
-        buton: {
-            backgroundColor: '#0095f6',
-            marginBottom: '3%',
-            marginLeft: '4%',
-            marginRight: '4%'
-        },
-        buton2:{
-            display:'flex',
-            alignContent:'center',
-            justifyItems:'center',
-            marginTop:'5%'
-            
-        },
-        email: {
-            // marginLeft:'1%',
-            // marginRight:'1%'
-            display: 'block'
-        },
-        link2: {
-            display: 'inline',
-            marginLeft: '1%',
+import React, { useState, useContext, useEffect } from "react";
+import { AuthContext } from "../contexts/AuthProvider";
+import { db, storage } from "./firebase";
+import { Link, useHistory } from "react-router-dom";
+import Error from "./Error";
+import { Button, TextField, makeStyles, Grid, Paper } from "@material-ui/core";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 
-        },
-        typo: {
-            display: 'flex',
-            justifyContent: 'center',
+const Signup = (props) => {
+  let value = useContext(AuthContext);
+  let history = useHistory();
 
-        },
-        typoh: {
-            color: '#718093',
-            textAlign: 'center'
-        },
-        typo3: {
-            textAlign: 'center'
-        }
-    });
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [fullName, setfullName] = useState('');
-    const [file,setFile] = useState(null);
-    const classes = useStyles();
-    const [error, setError] = useState("")
-    const [loading, setLoading] = useState(false)
-    const history = useHistory()
-    const { signup } = useAuth()
+  const useStyles = makeStyles({
+    centerDivs: {
+      height: "100vh",
+      width: "80vw",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      margin: "0 auto",
+    },
+    form: {
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      textAlign: "center",
+    },
+  });
 
+  let classes = useStyles();
 
-    const handleEmail = (e) => {
-        setEmail(e.target.value);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [type, setType] = useState("");
+
+  useEffect(() => {
+    if (value.user !== null) {
+      history.push("/");
     }
-    const handlePassword = (e) => {
-        setPassword(e.target.value);
-    }
-    const handleName = (e) => {
-        setfullName(e.target.value);
-    }
-    const handleUpload=(e)=>{
-        let file = e?.target?.files[0];
-        if(file!=null)
-        setFile(file);
-        // console.log(file)
-    }
-    const handleSignUp=async()=>{
-        if(file==null)
-        {
-            setError("Please upload your profile Image");
-            setTimeout(()=>{
-                setError('')
-            },2000)
-            return;
-        }
-        try {
-            setError("");
-            setLoading(true);
-           let userCredential= await signup(email, password);
-           let uid = userCredential.user.uid;
-        //    console.log(uid);
-            const uploadTask = storage.ref(`/users/${uid}/ProfileImage`).put(file);
-            uploadTask.on('state_changed', 
-  (snapshot) => {
-    // Observe state change events such as progress, pause, and resume
-    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-    
-  }, 
-  (error) => {
-    // Handle unsuccessful uploads
-    setError("Failed to upload File")
-  }, 
-  () => {
-    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-    //   console.log('File available at', downloadURL);
-      database.users.doc(uid).set({
-          email:email,
-          userId:uid,
-          fullName:fullName,
-          createdAt:database.getCurrentTimeStamp(),
-          profileUrl:downloadURL
-      })
-    });
-  }
-);
-            history.push("/")
-          } catch(e) {
-            setError("Failed to create an account "+e)
-          }
+    setLoading(false);
+  }, []);
+
+  const submitHandler = async () => {
+    setLoading(true);
+    if (name === "" || email === "" || password === "") {
+      setType("warning");
+      setError("Please fill in all the fields !");
+      setTimeout(() => {
+        setError(null);
+        setType(null);
+      }, 5000);
+      setLoading(false);
+      return;
     }
 
-    return (
-        <div className='signuoWrapper'>
-            <div className='signupStyle'>
-                <Card className={classes.root} variant="outlined">
-                    <CardContent>
-                        <div className="insta-head">
-                            <img src={InstaLogo} />
-                        </div>
-                        {error && <Alert severity="error">{error}</Alert>}
-                        <Typography className={classes.typoh} variant='subtitle1'>
-                            Sign up to see photos and videos from your friends.
-          </Typography>
-                        <TextField InputLabelProps={{ style: { width: '-webkit-fill-available' } }} className={classes.email} margin='dense' onChange={(e) => { handleEmail(e) }} id="outlined-basic" label="Enter Email" variant="outlined" fullWidth={true} size='small' />
-                        <TextField InputLabelProps={{ style: { width: '-webkit-fill-available' } }} className={classes.password} margin='dense' onChange={(e) => { handlePassword(e) }} id="outlined-basic" label="Password" variant="outlined" fullWidth={true} size='small' />
-                        <TextField InputLabelProps={{ style: { width: '-webkit-fill-available' } }} margin='dense' onChange={(e) => { handleName(e) }} id="outlined-basic" label="Full Name" variant="outlined" fullWidth={true} size='small' />
-                        <Button
-                            variant="outlined"
-                            color="secondary"
-                            component="label"
-                            startIcon={<CloudUploadIcon />}
-                            className={classes.buton2}
-                        >
-                            Upload Profile Image
-                            <input
-                             accept="image/*"
-                                type="file"
-                                hidden
-                                onChange={(e)=>handleUpload(e)}
-                            />
-                        </Button>
-                    </CardContent>
+    if (password.length < 8) {
+      setType("warning");
 
-                    <CardActions>
-                        <Button disabled={loading} onClick={handleSignUp} className={classes.buton} fullWidth={true} variant="contained" color="primary">
-                            Sign up
-                        </Button>
-                    </CardActions>
-                    <CardContent>
-                        <Typography className={classes.typo3} variant='subtitle1'>
-                            By signing up, you agree to our Terms , Data Policy and Cookies Policy .
-      </Typography>
-                    </CardContent>
-                </Card>
+      setError("Password must contain 8 characters!");
+      setTimeout(() => {
+        setError(null);
+        setType(null);
+      }, 5000);
+      setLoading(false);
+      return;
+    }
+    try {
+      let userData = await value.signup(email, password);
+      let uid = userData.user.uid;
 
-                <Card className={classes.root2} variant="outlined">
-                    <CardContent>
-                        <Typography className={classes.typo} variant='subtitle1'>
-                            Have an account? <Link className={classes.link2} variant="inherit" underline='none' href="/login" >
-                                Log In
-  </Link>
-                        </Typography>
-                    </CardContent>
-                </Card>
+      let profileImageUrl = null;
+
+      if (file !== null) {
+        let storageRef = await storage
+          .ref(`/users/profileImage/${uid}`)
+          .put(file);
+
+        let url = await storageRef.ref.getDownloadURL();
+        profileImageUrl = url;
+        console.log(profileImageUrl);
+      }
+
+      // console.log(userData);
+      console.log(profileImageUrl);
+      await db.users.doc(uid).set({
+        name,
+        email,
+        profileImageUrl,
+        createdAt: db.timeStamp(),
+        postIds: [],
+      });
+      history.push("/");
+    } catch (err) {
+      setType("error");
+      setError(err);
+      setTimeout(() => {
+        setError(null);
+        setType(null);
+      }, 5000);
+    }
+    setEmail(null);
+    setName(null);
+    setFile(null);
+    setPassword(null);
+    setLoading(false);
+  };
+
+  return loading === true ? (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: "100px",
+      }}
+    >
+      <div className="loader"></div>
+    </div>
+  ) : (
+    <div>
+      {error !== null && error.length > 0 ? (
+        <Error type={type} message={error} />
+      ) : null}
+      <h2 style={{ textAlign: "center", marginTop: "20px", fontWeight: "5px" }}>
+        <b>Welcome to Reels</b>
+      </h2>
+      <div className={classes.centerDivs}>
+        <Grid container spacing={2}>
+          <Grid item sm={6} xs={12}>
+            <img
+              src="./images/logo.jpg"
+              style={{ width: "-webkit-fill-available" }}
+            />
+          </Grid>
+          <Grid item sm={6} xs={12} style={{ width: "100%" }}>
+            <div className={classes.form}>
+              <TextField
+                id="name-input"
+                label="Name"
+                display="block"
+                type="text"
+                required
+                variant="outlined"
+                onChange={(e) => setName(e.target.value)}
+              />
+
+              <TextField
+                id="email-input"
+                display="block"
+                label="Email"
+                type="email"
+                required
+                variant="outlined"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <TextField
+                id="password-input"
+                display="block"
+                label="Password"
+                type="password"
+                autoComplete="current-password"
+                required
+                variant="outlined"
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              <Button
+                variant="contained"
+                color="default"
+                size="small"
+                className={classes.upload}
+                component="label"
+                startIcon={<CloudUploadIcon />}
+              >
+                Upload Image
+                <input
+                  type="file"
+                  hidden
+                  onChange={(e) => setFile(e?.target?.files[0])}
+                />
+              </Button>
+
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => submitHandler()}
+              >
+                Sign up
+              </Button>
+              <Link to="/login">Already have an account? Login</Link>
             </div>
-        </div>
-    )
+          </Grid>
+        </Grid>
+      </div>
+    </div>
+  );
+};
 
-}
+export default Signup;

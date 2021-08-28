@@ -18,8 +18,8 @@
     "react-scripts": "4.0.2",
     "react-scroll": "^1.8.2",
     "react-ticker": "^1.2.2",
+    "react-uuid": "^1.0.2",
     "simple-react-video-thumbnail": "0.0.7",
-    "uuid": "^8.3.2",
     "web-vitals": "^1.1.0"
   },
   "scripts": {
